@@ -1,13 +1,33 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/botxboom/go-url-shortner/internal/handler"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/joho/godotenv"
 )
 
-func main() {
-	http.HandleFunc("/shorten", shortenURL)
-	// http.HandleFunc("/:shortURL", redirectURL)
+func setupRoutes(app *fiber.App) {
+	app.Get("/:url", handler.ResolveURL)
+	app.Post("/api/v1/", handler.ShortenURL)
+}
 
-	http.ListenAndServe(":8080", nil)
+func main() {
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	app := fiber.New()
+
+	app.Use(logger.New())
+
+	setupRoutes(app)
+
+	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
 
 }
